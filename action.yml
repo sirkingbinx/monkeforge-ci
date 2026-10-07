@@ -1,0 +1,45 @@
+name: MonkeForge Build Publisher
+author: MonkeForge
+branding:
+  icon: upload-cloud
+  color: orange
+description: Upload DLL and ZIP builds to a MonkeForge release channel using an API key
+inputs:
+  api-key:
+    description: MonkeForge API key (pass a GitHub Actions secret)
+    required: true
+  mod-id:
+    description: Existing mod GUID or active custom ID
+    required: true
+  version:
+    description: Unique version in this channel, starting with a digit
+    required: true
+  channel:
+    description: Existing enabled release channel
+    default: stable
+  files:
+    description: Newline-separated file paths or glob patterns (one DLL, one ZIP, or one of each)
+    required: true
+  notes:
+    description: Optional release notes
+    default: ''
+outputs:
+  mod-guid:
+    description: Immutable mod GUID
+    value: ${{ steps.publish.outputs.mod-guid }}
+  release-url:
+    description: Website URL for the selected release channel
+    value: ${{ steps.publish.outputs.release-url }}
+runs:
+  using: composite
+  steps:
+    - id: publish
+      shell: bash
+      env:
+        MF_API_KEY: ${{ inputs.api-key }}
+        MF_MOD_ID: ${{ inputs.mod-id }}
+        MF_VERSION: ${{ inputs.version }}
+        MF_CHANNEL: ${{ inputs.channel }}
+        MF_FILES: ${{ inputs.files }}
+        MF_NOTES: ${{ inputs.notes }}
+      run: python "$GITHUB_ACTION_PATH/publish.py"
